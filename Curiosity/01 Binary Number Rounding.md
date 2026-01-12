@@ -1,5 +1,4 @@
 
-
 # Binary vs Decimal (why floats lie and why DynamoDB wants Decimal)
 
 ## What is a "number" to a computer
