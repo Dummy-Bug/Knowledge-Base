@@ -37,6 +37,28 @@
 3. for read queries peak load can be 100x(peak write QPS) -> 5000 qps
 4. Availability -> 99.9% for redirects
 
+## Why Cache Is Mandatory (Not Optional)
+
+Key observation:
+
+- Writes: **~50 QPS**
+    
+- Reads: **~5000 QPS**
+    
+- Read/Write ratio = **100:1**
+    
+
+Hitting MySQL for every redirect:
+
+- Increases latency
+    
+- Burns DB connections
+    
+- Breaks 99.9% SLA under spikes
+    
+
+➡️ **Redirects must be served from cache**
+
 
 
 
