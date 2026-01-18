@@ -1,17 +1,11 @@
-# Trie-Based Typeahead — From Naive to Practical Design
-
----
 
 ## Starting Point: Why Trie Looks Attractive
 
 Trie gives:
 
 - Fast prefix lookup.
-    
 - O(length of prefix) traversal.
-    
 - Natural fit for autocomplete.
-    
 
 So the naive instinct is:
 
@@ -41,20 +35,14 @@ So basic Trie output is already misaligned with product requirement.
 Trie is:
 
 - Pointer heavy.
-    
 - Graph-like.
-    
 - Memory optimized.
-    
 
 Traditional databases:
 
 - Are row-oriented.
-    
 - Not pointer optimized.
-    
 - Terrible for tree traversal.
-    
 
 Result:
 
@@ -71,25 +59,19 @@ So:
 If traffic grows:
 
 - You will shard your system.
-    
 
 But how do you shard a Trie?
 
 Options:
 
 - Split by first letter.
-    
 - Split by prefix ranges.
-    
 
 Problems:
 
 - Hot prefixes concentrate load.
-    
 - Uneven distribution.
-    
 - Complex routing logic.
-    
 
 This becomes operationally painful.
 
@@ -114,20 +96,14 @@ Store Trie in memory.
 For each terminal node:
 
 - Store frequency count.
-    
 
 On request:
 
 1. Traverse prefix.
-    
 2. DFS subtree.
-    
 3. Collect all words.
-    
 4. Sort by frequency.
-    
 5. Return top K.
-    
 
 ---
 
@@ -144,9 +120,7 @@ Subtree size = millions.
 DFS cost:
 
 - O(number of words under prefix).
-    
 - Repeated on every request.
-    
 
 At 1M QPS this collapses instantly.
 
@@ -165,9 +139,7 @@ For a given prefix:
 They change only when:
 
 - New searches arrive.
-    
 - Popularity updates.
-    
 
 So computing top K on every read is wasteful.
 
@@ -180,7 +152,6 @@ So computing top K on every read is wasteful.
 Instead of:
 
 - Computing dynamically with DFS.
-    
 
 We:
 
@@ -193,11 +164,8 @@ So Trie node becomes:
 Now request flow:
 
 1. Traverse prefix.
-    
 2. Return stored topK.
-    
 3. Done.
-    
 
 Time complexity:
 
@@ -220,18 +188,13 @@ Example:
 Steps:
 
 1. Increment global count for this query.
-    
 2. Walk through prefixes:
-    
 
 `p pa par pari paris ...`
 
 3. At each prefix node:
-    
     - Update Top K heap or sorted set.
-        
     - Adjust ranking if needed.
-        
 
 This is incremental propagation.
 
@@ -248,17 +211,14 @@ We are duplicating data:
 Same query appears in:
 
 - Many prefix nodes.
-    
 
 Cost:
 
 - Higher memory usage.
-    
 
 Benefit:
 
 - Massive read performance gain.
-    
 
 This is a classic **space-for-time tradeoff**.
 
@@ -319,13 +279,9 @@ O(prefix length) time.
 But HashMap version:
 
 - Simpler.
-    
 - Easier to shard.
-    
 - Easier to persist snapshot.
-    
 - Easier to rebuild.
-    
 
 Production systems often use this flattened approach.
 
@@ -344,52 +300,24 @@ Assume:
 `50% unique-ish queries`
 
 Each query updates ~10 prefixes.
+	Each submitted query updates multiple prefixes.
+	
+	Example:
+	
+	Query:
+	
+	`"paris travel guide"`
+	
+	Prefixes:
+	
+	`p pa par pari paris paris  paris t ...`
 
 Total prefix updates:
-
-`1B × 10 = 10B prefix updates/day`
+`1B × 10 = 10B prefix updates/day` 
+Here 1B is taken for unqiue as well as old search submission queries as both would update the prefixes
 
 Convert to QPS:
 
 `10B / 100,000 ≈ 100,000 writes/sec`
 
 This is high.
-
-So:
-
-- Must batch updates.
-    
-- Must aggregate in memory.
-    
-- Must apply async rebuilds.
-    
-
-Not live updates.
-
----
-
-## Final Architecture Direction
-
-### Read Path
-
-`Client → Cache → Prefix Map → Return Top K`
-
----
-
-### Write Path
-
-`Search Submit → Queue → Aggregator → Rebuild Prefix Map → Snapshot Swap`
-
----
-
-## Why This Design Wins
-
-- No DFS at runtime.
-    
-- No DB lookups on read.
-    
-- Predictable latency.
-    
-- Easy to shard by prefix hash.
-    
-- Snapshot based serving.

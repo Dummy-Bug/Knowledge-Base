@@ -1,6 +1,7 @@
 ## User Scale Assumptions
 
-`Monthly Active Users (MAU) ≈ 1 Billion Daily Active Users (DAU) ≈ 20% of MAU ≈ 200 Million`
+`Monthly Active Users (MAU) ≈ 1 Billion.`
+`Daily Active Users (DAU) ≈ 20% of MAU ≈ 200 Million`
 
 ---
 
@@ -33,9 +34,7 @@ Rounded for engineering safety margin.
 Because client uses debouncing:
 
 - Not every keystroke triggers API call.
-    
 - User typically pauses typing multiple times.
-    
 
 Assumption:
 
@@ -59,11 +58,11 @@ Assumption:
 
 Calculation:
 
-`50% × 20M DAU = 10M write events per day`
+`50% × 200M DAU = 100M write events per day`
 
 Average write QPS:
 
-`10,000,000 / 100,000 ≈ 100 QPS`
+`100,000,000 / 100,000 ≈ 1000 QPS`
 
 Write load is small compared to read traffic.
 
@@ -89,13 +88,13 @@ Result:
 
 ## Summary Table
 
-|Metric|Value|
-|---|---|
-|MAU|1 Billion|
-|DAU|200 Million|
-|Daily Searches|1 Billion|
-|Average Typeahead QPS|50,000|
-|Write QPS (Search Submit)|100|
-|Peak QPS|~1 Million|
+| Metric                    | Value       |
+| ------------------------- | ----------- |
+| MAU                       | 1 Billion   |
+| DAU                       | 200 Million |
+| Daily Searches            | 1 Billion   |
+| Average Typeahead QPS     | 50,000      |
+| Write QPS (Search Submit) | 1000        |
+| Peak QPS                  | ~1 Million  |
 
 ---
