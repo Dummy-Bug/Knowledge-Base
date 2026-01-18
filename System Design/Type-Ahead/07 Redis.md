@@ -2,35 +2,23 @@
 We want:
 
 - Fast reads like in-memory HashMap.
-    
 - Distributed system.
-    
 - Persistence.
-    
 - Easy sharding.
-    
 
 In-memory HashMap fails because:
 
 - Single machine memory bound.
-    
 - No replication.
-    
 - No durability.
-    
 - No horizontal scaling.
-    
 
 Redis solves this:
 
 - Sub-millisecond reads.
-    
 - Distributed cluster.
-    
 - Built-in persistence.
-    
 - Sharding and replication.
-    
 
 So Redis becomes our **shared in-memory index layer**.
 
@@ -107,9 +95,7 @@ Search submissions are huge:
 If we update:
 
 - Query count.
-    
 - All prefix ZSETs.
-    
 
 For every search.
 
@@ -133,7 +119,7 @@ So we trade accuracy for throughput.
 
 ---
 
-## Step 6. Batching Strategy (Easy to Understand)
+## Step 6. Batching Strategy
 
 Instead of:
 
@@ -142,9 +128,7 @@ Update Redis every time count increases by 1.
 We do:
 
 - Maintain local in-memory counter.
-    
 - Only push update when count increases by 100.
-    
 
 Example:
 
@@ -153,11 +137,8 @@ Example:
 Effect:
 
 - Redis sees 1 write instead of 100.
-    
 - Ranking still roughly correct.
-    
 - Lag introduced but bounded.
-    
 
 This alone gives:
 
@@ -165,7 +146,7 @@ This alone gives:
 
 ---
 
-## Step 7. Sampling Strategy (Even Simpler)
+## Step 7. Sampling Strategy 
 
 Instead of updating Redis every time:
 
@@ -174,9 +155,7 @@ We randomly update.
 Example:
 
 - Only update 1 out of every 100 searches.
-    
 - Ignore remaining 99.
-    
 
 So:
 
@@ -204,12 +183,12 @@ Autocomplete is ranking based.
 
 If:
 
-Query A = 10,000 searches  
+Query A = 10,000 searches 
 Query B = 5,000 searches
 
 With sampling:
 
-A becomes 100  
+A becomes 100 
 B becomes 50
 
 Order remains correct.
@@ -224,16 +203,19 @@ We usually combine both:
 
 ### Pipeline:
 
-`Search Event    ↓ Local Aggregator    ↓ Sampling Filter    ↓ Batch Threshold    ↓ Redis Update`
+```
+Search Event    
+↓ Local Aggregator    
+↓ Sampling Filter    
+↓ Batch Threshold    
+↓ Redis Update
+```
 
 Result:
 
 - Huge write reduction.
-    
 - Stable Redis load.
-    
 - Fresh-enough ranking.
-    
 
 ---
 
@@ -260,13 +242,9 @@ Controlled load.
 If you update Redis on every search:
 
 - You will hit throughput ceiling.
-    
 - Costs explode.
-    
 - Latency spikes.
-    
 - Cluster thrashes.
-    
 
 Approximation is mandatory at this scale.
 

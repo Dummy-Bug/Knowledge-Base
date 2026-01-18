@@ -1,3 +1,5 @@
+[[Architecture.png]]
+
 # Flow A — TypeAhead (user typing / prefix suggestions)
 
 Goal: return top-K suggestions for a prefix in <50ms p99 with extremely high QPS.
@@ -229,96 +231,6 @@ User clicks `paris city cost of living` or presses Enter. They expect paginated 
 - **Global counter**:
     
     `HINCRBY typeahead:counts "paris city cost of living" <delta>`
-    
-
----
-
-# Sharding and hot-prefix handling (operational details)
-
-- **Redis cluster sharding**: keys are hashed across nodes.
-    
-- **Hot prefix problem**: prefixes like `the`, `a`, `how`, `p` concentrate traffic.
-    
-    - Mitigation:
-        
-        - Pre-split hot keys into multiple logical shards: `prefix:par:shard0`, `prefix:par:shard1` and aggregate when reading.
-            
-        - Use consistent hashing of member IDs to distribute writes across shards.
-            
-        - Use local in-memory caches at Autocomplete Service for extremely hot prefixes to avoid Redis pressure.
-            
-- **Routing**: API Gateway or Autocomplete Service must determine which shard(s) to query for a prefix. Prefer single-shard per prefix if possible for read simplicity.
-    
-
----
-
-# Failure modes and resilience
-
-1. **Queue lag increases**
-    
-    - Effect: ranking becomes stale.
-        
-    - Mitigation: alert on consumer lag, scale consumers.
-        
-2. **Redis node fails**
-    
-    - Effect: reads for keys on that node fail or are slow.
-        
-    - Mitigation:
-        
-        - Replication + failover.
-            
-        - Fallback to previous snapshot (local memory).
-            
-        - Serve best-effort with `stale` flag.
-            
-3. **Aggregator crash**
-    
-    - Effect: lost in-memory counts since last flush.
-        
-    - Mitigation: keep aggregator checkpointed to a persistent buffer or rely on queue replay (use Kafka with retention).
-        
-4. **Duplicate events (at-least-once delivery)**
-    
-    - Effect: double counting.
-        
-    - Mitigation: dedupe using `requestId` window or accept small duplication and correct in offline reconciliation.
-        
-5. **In-flight Lua trimming races**
-    
-    - Use atomic scripts for update+trim to avoid inconsistent topK.
-        
-
----
-
-# Monitoring and SLOs you must track
-
-- Read p50/p95/p99 latency.
-    
-- Redis command rate and latency.
-    
-- Cache hit ratio (local + CDN).
-    
-- Queue lag (consumer lag).
-    
-- Index rebuild duration.
-    
-- Top-K divergence vs offline truth (to measure approximation error).
-    
-- Error rate for Lua scripts.
-    
-
----
-
-# Example numbers (connect to your earlier traffic estimates)
-
-- Avg TypeAhead QPS (example) = 50k reads/sec.
-    
-- Write QPS after batching/sampling (target) = 10k writes/sec or less.
-    
-- Choose batching threshold = 100 to reduce write volume by 100x in the optimistic path.
-    
-- Keep topK per prefix = 10 (serve) but store topM = 500 in Redis ZSET so emerging items can bubble up without frequent rebuild.
     
 
 ---
