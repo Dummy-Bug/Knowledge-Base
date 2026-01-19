@@ -100,6 +100,7 @@ Response:
 ```json
 {
   "roomId": "R301",
+  "roomTypeId":"007", 
   "type": "DELUXE",
   "pricePerNight": 180,
   "capacity": 2,
@@ -169,7 +170,7 @@ Body:
 ```json
 {
   "hotelId": "H1001",
-  "roomId": "R301",
+  "roomTypeId":"007",
   "startDate": "2026-02-10",
   "endDate": "2026-02-13",
   "guestCount": 2,
@@ -180,6 +181,7 @@ Reponse:
 ```json
 {
   "reservationId": "RES900123",
+  "roomtype":"Deluxe",
   "status": "CONFIRMED",
   "totalPrice": 540
 }
@@ -241,3 +243,4 @@ Response:
 }
 ```
 
+ 
