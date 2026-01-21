@@ -6,8 +6,6 @@
 - **Trade-offs:** Achieving strong consistency often involves coordination and synchronization between nodes, which can lead to increased latency and reduced availability, especially in the face of network partitions.
 - **Stale reads:** occur in distributed systems when a read operation retrieves outdated or stale data, meaning the data is not the most recent or has not been updated to reflect the latest changes, so in consistency no matter to which node read call goes to data will always be updated / consistent / latest .
 
-![[Pasted image 20240126105746.png]]
-
 **Availability:**
 
 - **Definition:** Availability refers to the ability of a system to respond to requests, even in the face of failures or partitions.
